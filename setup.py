@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="BetterTkinter",
-    version="1.1.1",
+    version="1.1.2",
     license="MIT",
     author="D&I Projects",
     author_email="di.projects.help@gmail.com",
