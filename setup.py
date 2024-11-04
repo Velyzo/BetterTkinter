@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="BetterTkinter",
-    version="1.1.2",
+    version="1.2.0",
     license="MIT",
     author="D&I Projects",
     author_email="di.projects.help@gmail.com",
@@ -14,7 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/D-I-Projects/bettertkinter",
     packages=find_packages(include=["bettertkinter", "bettertkinter.*"]),
-    download_url='https://github.com/D-I-Projects/bettertkinter/archive/refs/tags/v1.1.1.tar.gz',
+    download_url='https://github.com/D-I-Projects/bettertkinter/archive/refs/tags/v1.2.0.tar.gz',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",

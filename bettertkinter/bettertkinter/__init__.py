@@ -1,1 +1,2 @@
-from .custom_button import CustomButton
+# __init__.py
+from .BTkButton import BTkButton
