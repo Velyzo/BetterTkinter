@@ -8,4 +8,6 @@ Only a concept currently
 
 ```pip install BetterTkinter``` 
 
+Documentation : <a href"https://eldritchy.github.io/BetterTkinterDocs/">https://eldritchy.github.io/BetterTkinterDocs/</a>
+
 </div>
