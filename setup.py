@@ -14,7 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Eldritchy/bettertkinter",
     packages=find_packages(include=["bettertkinter", "bettertkinter.*"]),
-    download_url='https://github.com/Eldritchy/bettertkinter/archive/refs/tags/v1.2.1.tar.gz',
+    download_url='https://github.com/Eldritchy/bettertkinter/archive/refs/tags/v1.3.1.tar.gz',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
