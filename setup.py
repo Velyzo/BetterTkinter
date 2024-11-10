@@ -7,7 +7,7 @@ setup(
     name="BetterTkinter",
     version="1.3.1",
     license="MIT",
-    author="D&I Projects",
+    author="Eldritchy",
     author_email="eldritchy.help@gmail.com",
     description="An enhanced tkinter package with custom-styled widgets",
     long_description=long_description,
