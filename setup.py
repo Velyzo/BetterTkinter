@@ -34,7 +34,7 @@ setup(
     python_requires=">=3.6",
     project_urls={
         "Bug Tracker": "https://github.com/Eldritchy/bettertkinter/issues",
-        "Documentation": "https://github.com/Eldritchy/bettertkinter#readme",
+        "Documentation": "https://eldritchy.github.io/BetterTkinterDocs/",
         "Source Code": "https://github.com/Eldritchy/bettertkinter",
     },
     include_package_data=True,
