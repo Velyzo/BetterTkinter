@@ -1,5 +1,4 @@
 import tkinter as tk
-import BTk
 
 class BTkFrame(tk.Frame):
     def __init__(self, parent, radius=25, width=100, height=100, color="#005A9E", 
