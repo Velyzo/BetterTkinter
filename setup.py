@@ -38,4 +38,7 @@ setup(
         "Source Code": "https://github.com/Eldritchy/bettertkinter",
     },
     include_package_data=True,
+    dependency_links=[
+        "https://github.com/Eldritchy/BetterTkinter/packages"
+    ],
 )
