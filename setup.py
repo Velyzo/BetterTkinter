@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="BetterTkinter",
-    version="1.3.3",
+    version="1.3.4",
     license="MIT",
     author="Eldritchy",
     author_email="eldritchy.help@gmail.com",
@@ -14,7 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Eldritchy/bettertkinter",
     packages=find_packages(include=["bettertkinter", "bettertkinter.*"]),
-    download_url='https://github.com/Eldritchy/bettertkinter/archive/refs/tags/v1.3.3.tar.gz',
+    download_url='https://github.com/Eldritchy/bettertkinter/archive/refs/tags/v1.3.4.tar.gz',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
