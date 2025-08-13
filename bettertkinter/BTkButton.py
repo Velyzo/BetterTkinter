@@ -1,209 +1,241 @@
 import tkinter as tk
-from PIL import Image, ImageTk
-import threading
+import math
 
 class BTkButton(tk.Canvas):
-    def __init__(self, parent, text="", bg_color="#0078D7", fg_color="white", hover_color="#005A9E",
-                 rounded_radius=20, width=100, height=40, command=None, font=("Helvetica", 12, "bold"),
-                 icon_path=None, icon_side="left", icon_size=(20, 20), border_color=None, border_width=0,
-                 shadow=False, shadow_color="#888", shadow_offset=(2, 2), gradient=None,
-                 disabled=False, loading=False, tooltip=None, shortcut=None,
-                 on_mouse_enter=None, on_mouse_leave=None, on_mouse_down=None, on_mouse_up=None,
-                 animation=None, **kwargs):
-        super().__init__(parent, height=height, width=width, bg=parent['bg'], highlightthickness=0, **kwargs)
-
-        self.bg_color = bg_color
-        self.hover_color = hover_color
-        self.fg_color = fg_color
-        self.rounded_radius = rounded_radius
-        self.width = width
-        self.height = height
-        self.command = command
-        self.font = font
-        self.icon_path = icon_path
-        self.icon_side = icon_side
-        self.icon_size = icon_size
-        self.border_color = border_color
-        self.border_width = border_width
-        self.shadow = shadow
-        self.shadow_color = shadow_color
-        self.shadow_offset = shadow_offset
-        self.gradient = gradient
-        self.disabled = disabled
-        self.loading = loading
-        self.tooltip = tooltip
-        self.shortcut = shortcut
-        self.on_mouse_enter = on_mouse_enter
-        self.on_mouse_leave = on_mouse_leave
-        self.on_mouse_down = on_mouse_down
-        self.on_mouse_up = on_mouse_up
-        self.animation = animation
-        self.text = text
-
-        self._icon_img = None
-        self._loading_thread = None
-        self._is_hovered = False
-
-        self.draw_button()
-
-        self.bind("<Button-1>", self.on_click)
-        self.bind("<Enter>", self.on_enter)
-        self.bind("<Leave>", self.on_leave)
-        self.bind("<ButtonPress-1>", self.on_mouse_down_event)
-        self.bind("<ButtonRelease-1>", self.on_mouse_up_event)
-        self.bind_all("<Key>", self.on_key_event)
-
-        if self.tooltip:
-            self._tip = None
-            self.bind("<Enter>", self.show_tooltip)
-            self.bind("<Leave>", self.hide_tooltip)
-
-        if self.loading:
-            self.start_loading()
-
-    def draw_button(self):
+    """Professional BetterTkinter button component with modern design"""
+    
+    # Font constant
+    DEFAULT_FONT = "Segoe UI"
+    
+    def __init__(self, parent, text="Button", style="primary", **kwargs):
+        # Configuration
+        self.text = kwargs.get('text', text)
+        self.width = kwargs.get('width', 120)
+        self.height = kwargs.get('height', 40)
+        self.command = kwargs.get('command', None)
+        
+        # Colors based on style
+        self._load_style(style, kwargs)
+        
+        # Shape
+        self.rounded_radius = kwargs.get('rounded_radius', 8)
+        
+        # Initialize canvas
+        super().__init__(parent, 
+                        width=self.width, 
+                        height=self.height, 
+                        bg=self._get_parent_bg(parent),
+                        highlightthickness=0)
+        
+        # Button state
+        self._state = "normal"
+        
+        # Render and bind events
+        self._render()
+        self._bind_events()
+    
+    def _load_style(self, style, kwargs):
+        """Load color scheme based on style"""
+        styles = {
+            "primary": {"bg": "#007BFF", "hover": "#0056B3", "press": "#004085", "fg": "white"},
+            "success": {"bg": "#28A745", "hover": "#1E7E34", "press": "#155724", "fg": "white"},
+            "warning": {"bg": "#FFC107", "hover": "#E0A800", "press": "#D39E00", "fg": "black"},
+            "danger": {"bg": "#DC3545", "hover": "#BD2130", "press": "#A71E2A", "fg": "white"},
+            "secondary": {"bg": "#6C757D", "hover": "#5A6268", "press": "#494F54", "fg": "white"},
+        }
+        
+        colors = styles.get(style, styles["primary"])
+        self.bg_color = kwargs.get('bg_color', colors["bg"])
+        self.hover_color = kwargs.get('hover_color', colors["hover"])
+        self.press_color = kwargs.get('press_color', colors["press"])
+        self.fg_color = kwargs.get('fg_color', colors["fg"])
+    
+    def _get_parent_bg(self, parent):
+        """Get parent background color"""
+        try:
+            return parent.cget("bg")
+        except (AttributeError, tk.TclError):
+            return "#FFFFFF"
+    
+    def _render(self):
+        """Render the button with current state"""
         self.delete("all")
-        radius = self.rounded_radius
-        # Shadow
-        if self.shadow:
-            self.create_oval(self.shadow_offset[0], self.shadow_offset[1], radius * 2 + self.shadow_offset[0], radius * 2 + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-            self.create_oval(self.width - radius * 2 + self.shadow_offset[0], self.shadow_offset[1], self.width + self.shadow_offset[0], radius * 2 + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-            self.create_oval(self.shadow_offset[0], self.height - radius * 2 + self.shadow_offset[1], radius * 2 + self.shadow_offset[0], self.height + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-            self.create_oval(self.width - radius * 2 + self.shadow_offset[0], self.height - radius * 2 + self.shadow_offset[1], self.width + self.shadow_offset[0], self.height + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-            self.create_rectangle(radius + self.shadow_offset[0], self.shadow_offset[1], self.width - radius + self.shadow_offset[0], self.height + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-            self.create_rectangle(self.shadow_offset[0], radius + self.shadow_offset[1], self.width + self.shadow_offset[0], self.height - radius + self.shadow_offset[1], fill=self.shadow_color, outline="", tags="shadow")
-
-        # Border
-        if self.border_color and self.border_width > 0:
-            self.create_oval(0, 0, radius * 2, radius * 2, fill=self.border_color, outline="", width=self.border_width, tags="border")
-            self.create_oval(self.width - radius * 2, 0, self.width, radius * 2, fill=self.border_color, outline="", width=self.border_width, tags="border")
-            self.create_oval(0, self.height - radius * 2, radius * 2, self.height, fill=self.border_color, outline="", width=self.border_width, tags="border")
-            self.create_oval(self.width - radius * 2, self.height - radius * 2, self.width, self.height, fill=self.border_color, outline="", width=self.border_width, tags="border")
-            self.create_rectangle(radius, 0, self.width - radius, self.height, fill=self.border_color, outline="", width=self.border_width, tags="border")
-            self.create_rectangle(0, radius, self.width, self.height - radius, fill=self.border_color, outline="", width=self.border_width, tags="border")
-
-        # Gradient or background
-        fill_color = self.bg_color if not self.gradient else self._draw_gradient()
-        self.create_oval(0, 0, radius * 2, radius * 2, fill=fill_color, outline="", tags="button_bg")
-        self.create_oval(self.width - radius * 2, 0, self.width, radius * 2, fill=fill_color, outline="", tags="button_bg")
-        self.create_oval(0, self.height - radius * 2, radius * 2, self.height, fill=fill_color, outline="", tags="button_bg")
-        self.create_oval(self.width - radius * 2, self.height - radius * 2, self.width, self.height, fill=fill_color, outline="", tags="button_bg")
-        self.create_rectangle(radius, 0, self.width - radius, self.height, fill=fill_color, outline="", tags="button_bg")
-        self.create_rectangle(0, radius, self.width, self.height - radius, fill=fill_color, outline="", tags="button_bg")
-
-        # Icon
-        icon_offset = 0
-        if self.icon_path:
-            img = Image.open(self.icon_path).resize(self.icon_size)
-            self._icon_img = ImageTk.PhotoImage(img)
-            if self.icon_side == "left":
-                icon_offset = self.icon_size[0] // 2 + 10
-                self.create_image(icon_offset, self.height // 2, image=self._icon_img)
-            elif self.icon_side == "right":
-                icon_offset = self.width - self.icon_size[0] // 2 - 10
-                self.create_image(icon_offset, self.height // 2, image=self._icon_img)
-
-        # Text
-        text_x = self.width // 2
-        if self.icon_path and self.icon_side == "left":
-            text_x += self.icon_size[0] // 2
-        elif self.icon_path and self.icon_side == "right":
-            text_x -= self.icon_size[0] // 2
-        self.text_id = self.create_text(text_x, self.height // 2, text=self.text, fill=self.fg_color, font=self.font)
-
-        # Disabled state
-        if self.disabled:
-            self.itemconfig("button_bg", fill="#cccccc")
-            self.itemconfig(self.text_id, fill="#888888")
-            self.unbind("<Button-1>")
-
-        # Loading spinner
-        if self.loading:
-            self._draw_spinner()
-
-    def _draw_gradient(self):
-        # Placeholder for gradient fill (could use PIL for advanced gradients)
-        return self.bg_color
-
-    def _draw_spinner(self):
-        # Simple spinner animation (placeholder)
-        self.create_oval(self.width//2-10, self.height//2-10, self.width//2+10, self.height//2+10, outline="#888", width=2, tags="spinner")
-
-    def start_loading(self):
-        self.loading = True
-        self.draw_button()
-        # Could add animation thread here
-
-    def stop_loading(self):
-        self.loading = False
-        self.draw_button()
-
-    def on_click(self, event):
-        if self.disabled or self.loading:
+        
+        # Get current color based on state
+        if self._state == "pressed":
+            bg_color = self.press_color
+        elif self._state == "hovered":
+            bg_color = self.hover_color
+        else:
+            bg_color = self.bg_color
+        
+        # Draw rounded rectangle
+        self._draw_rounded_rect(0, 0, self.width, self.height, self.rounded_radius, bg_color)
+        
+        # Draw text
+        self.create_text(self.width/2, self.height/2, 
+                        text=self.text, 
+                        fill=self.fg_color,
+                        font=(self.DEFAULT_FONT, 10, "normal"))
+    
+    def _draw_rounded_rect(self, x1, y1, x2, y2, radius, color):
+        """Draw rounded rectangle using mathematical curves"""
+        if radius <= 0:
+            # Simple rectangle
+            self.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
             return
+        
+        # Limit radius to half of smallest dimension
+        max_radius = min((x2-x1)/2, (y2-y1)/2)
+        radius = min(radius, max_radius)
+        
+        # Create points for rounded corners
+        points = []
+        
+        # Top-left corner
+        for i in range(0, 90, 10):
+            angle = math.radians(90 + i)
+            px = x1 + radius - radius * math.cos(angle)
+            py = y1 + radius - radius * math.sin(angle)
+            points.extend([px, py])
+        
+        # Top-right corner
+        for i in range(0, 90, 10):
+            angle = math.radians(i)
+            px = x2 - radius + radius * math.cos(angle)
+            py = y1 + radius - radius * math.sin(angle)
+            points.extend([px, py])
+        
+        # Bottom-right corner
+        for i in range(0, 90, 10):
+            angle = math.radians(270 + i)
+            px = x2 - radius + radius * math.cos(angle)
+            py = y2 - radius + radius * math.sin(angle)
+            points.extend([px, py])
+        
+        # Bottom-left corner
+        for i in range(0, 90, 10):
+            angle = math.radians(180 + i)
+            px = x1 + radius + radius * math.cos(angle)
+            py = y2 - radius + radius * math.sin(angle)
+            points.extend([px, py])
+        
+        # Draw the polygon
+        self.create_polygon(points, fill=color, outline=color, smooth=True)
+    
+    def _bind_events(self):
+        """Bind mouse events"""
+        self.bind("<Enter>", self._on_enter)
+        self.bind("<Leave>", self._on_leave)
+        self.bind("<ButtonPress-1>", self._on_press)
+        self.bind("<ButtonRelease-1>", self._on_release)
+        self.bind("<Button-1>", self._on_click)
+    
+    def _on_click(self, event=None):
+        """Handle button click"""
         if self.command:
             self.command()
+    
+    def _on_enter(self, event=None):
+        """Handle mouse enter"""
+        self._state = "hovered"
+        self._render()
+    
+    def _on_leave(self, event=None):
+        """Handle mouse leave"""
+        self._state = "normal"
+        self._render()
+    
+    def _on_press(self, event=None):
+        """Handle mouse press"""
+        self._state = "pressed"
+        self._render()
+    
+    def _on_release(self, event=None):
+        """Handle mouse release"""
+        self._state = "hovered"
+        self._render()
+    
+    def configure(self, **kwargs):
+        """Configure button properties"""
+        if 'text' in kwargs:
+            self.text = kwargs['text']
+        if 'bg_color' in kwargs:
+            self.bg_color = kwargs['bg_color']
+        self._render()
 
-    def on_enter(self, event):
-        self._is_hovered = True
-        self.itemconfig("button_bg", fill=self.hover_color)
-        if self.on_mouse_enter:
-            self.on_mouse_enter(event)
-
-    def on_leave(self, event):
-        self._is_hovered = False
-        self.itemconfig("button_bg", fill=self.bg_color)
-        if self.on_mouse_leave:
-            self.on_mouse_leave(event)
-
-    def on_mouse_down_event(self, event):
-        if self.on_mouse_down:
-            self.on_mouse_down(event)
-
-    def on_mouse_up_event(self, event):
-        if self.on_mouse_up:
-            self.on_mouse_up(event)
-
-    def on_key_event(self, event):
-        if self.shortcut and event.keysym.lower() == self.shortcut.lower():
-            if self.command:
-                self.command()
-
-    def show_tooltip(self, event=None):
-        if not self.tooltip:
-            return
-        if self._tip:
-            return
-        x = self.winfo_rootx() + self.width // 2
-        y = self.winfo_rooty() + self.height + 10
-        self._tip = tw = tk.Toplevel(self)
-        tw.wm_overrideredirect(True)
-        tw.wm_geometry(f"+{x}+{y}")
-        label = tk.Label(tw, text=self.tooltip, justify=tk.LEFT,
-                         background="#ffffe0", relief=tk.SOLID, borderwidth=1,
-                         font=("tahoma", "8", "normal"))
-        label.pack(ipadx=1)
-
-    def hide_tooltip(self, event=None):
-        tw = self._tip
-        self._tip = None
-        if tw:
-            tw.destroy()
-
+# Test window
 if __name__ == "__main__":
-    def sample_command():
-        print("Button clicked!")
-
-    root = tk.Tk()
-    root.title("BetterTkinter")
-
-    button1 = BTkButton(root, text="Button 1", bg_color="#FF6347", hover_color="#FF4500", rounded_radius=25, width=120, height=50, command=sample_command, font=("Arial", 14, "bold"), border_color="#222", border_width=2, shadow=True, tooltip="Click me!", shortcut="Return")
-    button1.pack(pady=10)
-
-    button2 = BTkButton(root, text="Button 2", bg_color="#4CAF50", fg_color="black", hover_color="#388E3C", rounded_radius=30, width=160, height=50, command=sample_command, icon_path=None, loading=True)
-    button2.pack(pady=10)
-
-    button3 = BTkButton(root, text="Button 3", bg_color="#0078D7", hover_color="#005A9E", rounded_radius=40, width=180, height=70, command=sample_command, disabled=True)
-    button3.pack(pady=10)
-
-    root.mainloop()
+    def test_button():
+        """Professional button demonstration"""
+        root = tk.Tk()
+        root.title("BetterTkinter Button Demo")
+        root.geometry("800x600")
+        root.configure(bg="#FFFFFF")
+        
+        # Header
+        header_frame = tk.Frame(root, bg="#FFFFFF", pady=20)
+        header_frame.pack(fill="x")
+        
+        tk.Label(header_frame, text="BetterTkinter Button Components", 
+                font=(BTkButton.DEFAULT_FONT, 18, "normal"), 
+                bg="#FFFFFF", fg="#333333").pack()
+        
+        tk.Label(header_frame, text="Professional UI components for modern applications", 
+                font=(BTkButton.DEFAULT_FONT, 10, "normal"), 
+                bg="#FFFFFF", fg="#666666").pack(pady=(5, 0))
+        
+        # Style variations
+        styles_frame = tk.Frame(root, bg="#FFFFFF")
+        styles_frame.pack(pady=20)
+        
+        tk.Label(styles_frame, text="Button Styles", 
+                font=(BTkButton.DEFAULT_FONT, 14, "normal"), 
+                bg="#FFFFFF", fg="#333333").pack(pady=(0, 15))
+        
+        style_container = tk.Frame(styles_frame, bg="#FFFFFF")
+        style_container.pack()
+        
+        styles = ["primary", "success", "warning", "danger", "secondary"]
+        for style in styles:
+            btn = BTkButton(style_container, text=style.title(), style=style,
+                          command=lambda s=style: print(f"{s.title()} button activated"))
+            btn.pack(side="left", padx=8)
+        
+        # Size variations
+        sizes_frame = tk.Frame(root, bg="#FFFFFF")
+        sizes_frame.pack(pady=20)
+        
+        tk.Label(sizes_frame, text="Button Sizes", 
+                font=(BTkButton.DEFAULT_FONT, 14, "normal"), 
+                bg="#FFFFFF", fg="#333333").pack(pady=(0, 15))
+        
+        size_container = tk.Frame(sizes_frame, bg="#FFFFFF")
+        size_container.pack()
+        
+        sizes = [("Small", 80, 30), ("Medium", 120, 40), ("Large", 160, 50)]
+        for name, w, h in sizes:
+            btn = BTkButton(size_container, text=name, width=w, height=h,
+                          command=lambda n=name: print(f"{n} size selected"))
+            btn.pack(side="left", padx=8)
+        
+        # Corner radius variations
+        radius_frame = tk.Frame(root, bg="#FFFFFF")
+        radius_frame.pack(pady=20)
+        
+        tk.Label(radius_frame, text="Corner Radius Options", 
+                font=(BTkButton.DEFAULT_FONT, 14, "normal"), 
+                bg="#FFFFFF", fg="#333333").pack(pady=(0, 15))
+        
+        radius_container = tk.Frame(radius_frame, bg="#FFFFFF")
+        radius_container.pack()
+        
+        radii = [0, 5, 10, 15, 20]
+        for radius in radii:
+            btn = BTkButton(radius_container, text=f"R{radius}", rounded_radius=radius,
+                          command=lambda r=radius: print(f"Radius {r}px applied"))
+            btn.pack(side="left", padx=8)
+        
+        root.mainloop()
+    
+    test_button()
