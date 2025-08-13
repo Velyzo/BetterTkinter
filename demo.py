@@ -869,7 +869,7 @@ class BTkUltimateDemo:
         self.tabs = {}
         self.current_tab = None
         
-        self.logger.info("Initializing BetterTkinter Ultimate Demo")
+        self.logger.info("Initializing BetterTkinter Demo")
         
         try:
             self.setup_main_window()
@@ -890,7 +890,7 @@ class BTkUltimateDemo:
             self.logger.info("Setting up main window")
             
             self.root = tk.Tk()
-            self.root.title("BetterTkinter Ultimate Demo - Complete Component Showcase")
+            self.root.title("BetterTkinter Demo - Complete Component Showcase")
             self.root.geometry("1200x800")
             self.root.minsize(800, 600)
             
@@ -974,7 +974,7 @@ class BTkUltimateDemo:
             
             # Main title
             title_label = tk.Label(title_frame,
-                                 text="🚀 BetterTkinter Ultimate Demo",
+                                 text="🚀 BetterTkinter Demo",
                                  font=('Segoe UI', 18, 'bold'),
                                  bg='#ffffff', fg='#333333')
             title_label.pack(side='left')
@@ -1148,7 +1148,7 @@ class BTkUltimateDemo:
                 ]
                 
                 self.system_tray = COMPONENTS['BTkSystemTray'](
-                    app_name="BTk Ultimate Demo",
+                    app_name="BTk Demo",
                     root_window=self.root,
                     on_show=on_show,
                     on_hide=on_hide,
@@ -1245,7 +1245,7 @@ class BTkUltimateDemo:
             # Show startup notification
             if self.system_tray:
                 self.root.after(2000, lambda: self.system_tray.show_notification(
-                    "BTk Ultimate Demo", "Demo started successfully! Check system tray."))
+                    "BTk Demo", "Demo started successfully! Check system tray."))
             
             # Start main loop
             self.root.mainloop()
@@ -1261,7 +1261,7 @@ class BTkUltimateDemo:
 def main():
     """Main entry point with comprehensive error handling"""
     try:
-        print("🚀 Starting BetterTkinter Ultimate Demo...")
+        print("🚀 Starting BetterTkinter Demo...")
         print("=" * 60)
         
         # Show import status
@@ -1293,7 +1293,7 @@ def main():
             root = tk.Tk()
             root.withdraw()
             messagebox.showerror("Critical Error", 
-                               f"Failed to start BTk Ultimate Demo:\n\n{e}\n\nCheck console for details.")
+                               f"Failed to start BTk Demo:\n\n{e}\n\nCheck console for details.")
             root.destroy()
         except:
             pass
