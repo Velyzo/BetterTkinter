@@ -97,3 +97,11 @@ class BTkSlider(tk.Canvas):
     def set(self, value):
         self.value = max(self.from_, min(self.to, value))
         self.draw_slider()
+    
+    def set_value(self, value):
+        """Alternative method name for setting value"""
+        self.set(value)
+    
+    def get_value(self):
+        """Alternative method name for getting value"""  
+        return self.get()
