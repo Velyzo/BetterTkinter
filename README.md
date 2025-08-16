@@ -1,4 +1,4 @@
-# 🚀 BetterTkinter
+# BetterTkinter
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.7+-blue?style=for-the-badge&logo=python" alt="Python">
